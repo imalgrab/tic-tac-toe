@@ -9,30 +9,17 @@ class Board extends React.Component {
             player: 1,
         };
     }
-     // znalezc indeks
-    moveAvailable() {
-        const squares = this.state.squares.slice();
-        return squares.find((x) => x === null) !== undefined;
-    }
-
     handleClick(i) {
-        if (!this.moveAvailable()) {
-            alert('Game is finished!');
-        } else {
-            if (this.state.player === 1) {
-                const squares = this.state.squares.slice();
-                squares[i] = 'X';
-                this.setState({ squares: squares });
-            } else if (this.state.player === 0) {
-                const squares = this.state.squares.slice();
-                squares[i] = 'O';
-                this.setState({ squares: squares });
-            }
-            const p = this.state.player;
-            this.setState({ player: 1 - p });
+        const squares = this.state.squares.slice();
+        if (findWinner(squares) || squares[i]) {
+            return;
         }
+        squares[i] = this.state.player ? 'X' : 'O';
+        this.setState({
+            squares: squares,
+            player: 1 - this.state.player,
+        });
     }
-
     renderSquare(i) {
         return (
             <Square
@@ -42,7 +29,13 @@ class Board extends React.Component {
         );
     }
     render() {
-        const status = 'Next player: X';
+        const winner = findWinner(this.state.squares);
+        let status;
+        if (winner) {
+            status = 'Winner: ' + winner;
+        } else {
+            status = 'Next player: ' + (this.state.player ? 'X' : 'O');
+        }
 
         return (
             <div>
@@ -69,3 +62,22 @@ class Board extends React.Component {
 
 export default Board;
 
+function findWinner(board) {
+    const winPos = [
+        [0, 1, 2],
+        [3, 4, 5],
+        [6, 7, 8],
+        [0, 3, 6],
+        [1, 4, 7],
+        [2, 5, 8],
+        [0, 4, 8],
+        [2, 4, 6]
+    ];
+    for (let i = 0; i < winPos.length; i++) {
+        const [a, b, c] = winPos[i];
+        if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+            return board[a];
+        }
+    }
+    return null;
+}
